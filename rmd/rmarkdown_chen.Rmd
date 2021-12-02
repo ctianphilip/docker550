@@ -1,0 +1,97 @@
+---
+title: "INFO550 - HW2"
+author: 'Chen Tian, 2392137'
+output:
+  html_document
+---
+
+
+This dataset is from the Domestic Airline Consumer Airfare Report and contains contains information about flights between pairs of cities and airpods, as well as related airfare information. The data ranges from the first quarter of 1996 to the first quarter of 2017. The data is stored on the 'airfare_info550.csv' file.
+
+
+```{r, echo = FALSE, eval = TRUE, warning = FALSE, message=FALSE}
+# load the data and packages
+airfare = read.csv('../data/airfare_info550.csv')
+
+library(ggplot2)
+
+```
+
+**1 Data Cleaning**
+
+In this step, we load the csv file and convert the time related columns to one standard time Year-Month-Day column. Then, we convert the identification number of cities and airports to factor values. Also, we check for the missing values in each column.
+
+We find that the entire columns `ariport1`, `airport2`, `airport_id1`, `airport_id2` are missing. Apart from this, the missing values are concentrated on year 1996 and year 1997. This could be explained by the low adoption rate of computers or low capacity of computers during those years, which may lead to the missing of certain tickets information.
+
+
+```{r, echo = FALSE, eval = TRUE}
+
+
+# combine year and quarter into a single time
+y = as.character(airfare$year)
+q = as.character(airfare$quarter)
+q[q == '4'] = '10'
+q[q == '3'] = '7'
+q[q == '2'] = '4'
+x = paste(y, q, rep("1", times = length(airfare$year)))
+time = as.Date(x, format = "%Y %m %d")
+airfare$time = time
+
+# convert identification number of cities and airports to factor
+airfare[,16:19] = sapply(airfare[, 16:19], as.factor)
+
+# store data into table for analyses
+table_df = airfare
+
+
+
+
+# check for missing value
+
+table(table_df$year, table_df$quarter)
+
+# check for missing values in each column
+missing_values = colSums(apply(table_df, MARGIN = 2, FUN = is.na))
+
+# sum the number of missing values in each year
+missing = table_df[is.na(table_df$lg_fare), ]
+sort(table(missing$year), decreasing = TRUE)
+
+# show top 10 cities with the highest missing values
+x = as.data.frame(table(missing$city1))
+x = x[x$Freq > 0,]
+y = as.data.frame(table(missing$city2))
+y = y[y$Freq > 0,]
+z = merge(x,y, by = "Var1")
+z$Freq = z$Freq.x + z$Freq.y
+z = z[, -c(2, 3)]
+names(z) = c("city", "Freq")
+z[order(z$Freq,decreasing = TRUE), ][1:10,]
+
+
+```
+
+
+**2 Plot and Analyses**
+
+In this part, we analyze the relationship between passenger numbers and year. We divide the data by year and quarter and plot the relationship between passenger numbers and year among 4 quarters.
+
+We find that typically the first quarter would have the lowest number of passengers and the second quarter would have the highest number of passengers.This pattern may be due to the change of temperatures between winter and spring.
+
+More importantly, along the years, there are two thresholds which marks the decline of passenger numbers. The first threshold is around 2001 which is likely due to the impact of 9.11 incident. During that period, government was canceling flights and closing airports which cause the sharp reduction in passenger numbers. Another threshold is around 2008 which is likely due to the impact of financial crisis. During the financial crisis, the demand for air transportation fell sharply as unemployment rate went up. The low economic development reduced the need for business interaction through airplanes.
+
+After 2010, economic gradually come back to life and so does the airline market.
+
+```{r, echo = FALSE, fig.align='center', fig.width=8, fig.height=3}
+# passengers traveling between two cities 
+passengers = aggregate(table_df$passengers, by = list(table_df$year, table_df$quarter), sum)
+names(passengers) = c("year", "quarter", "total")
+passengers$total = passengers$total * 90
+
+# plot a line graph for each quarter
+passengers$quarter = as.factor(passengers$quarter)
+p = ggplot(passengers, aes(x=factor(year), y=total, colour=quarter,group=quarter))
+p = p + geom_line(size=1)
+p + ggtitle("passengers vs. time") + xlab("year") + ylab("passengers")
+```
+ 
