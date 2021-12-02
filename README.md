@@ -10,7 +10,9 @@ Procedures to get results:
 docker pull ctianphilip/ex_proj
 
   (2) creat a local folder to store the output (this folder is on your root directory):
+  
 mkdir ~/docker_output
 
   (3) mount the output:
+  
 docker run -v ~/docker_output:/project/output ex_proj
