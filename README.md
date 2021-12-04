@@ -16,4 +16,4 @@ Procedures to get results:
 
   (3) mount the output:
   
-          docker run -v ~/docker_output:/project/output ex_proj
+          docker run -v ~/docker_output:/project/output ctianphilip/ex_proj
