@@ -17,3 +17,6 @@ Procedures to get results:
   (3) mount the output:
   
           docker run -v ~/docker_output:/project/output ctianphilip/ex_proj
+
+
+The output html file could be found on your local folder ~/docker_output
